@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_movie_app/presentation/pages/home_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -11,8 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Movie App',
       theme: ThemeData.dark(),
-      debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }
