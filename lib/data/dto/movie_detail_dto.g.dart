@@ -15,9 +15,16 @@ MovieDetailDto _$MovieDetailDtoFromJson(Map<String, dynamic> json) =>
       voteAverage: (json['vote_average'] as num).toDouble(),
       voteCount: (json['vote_count'] as num).toInt(),
       popularity: (json['popularity'] as num).toDouble(),
+      genres: (json['genres'] as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList(),
+      productionCompanies: (json['production_companies'] as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList(),
       runtime: (json['runtime'] as num?)?.toInt(),
       budget: (json['budget'] as num?)?.toInt(),
       revenue: (json['revenue'] as num?)?.toInt(),
+      tagline: json['tagline'] as String?,
     );
 
 Map<String, dynamic> _$MovieDetailDtoToJson(MovieDetailDto instance) =>
@@ -32,4 +39,7 @@ Map<String, dynamic> _$MovieDetailDtoToJson(MovieDetailDto instance) =>
       'popularity': instance.popularity,
       'budget': instance.budget,
       'revenue': instance.revenue,
+      'tagline': instance.tagline,
+      'genres': instance.genres,
+      'production_companies': instance.productionCompanies,
     };
