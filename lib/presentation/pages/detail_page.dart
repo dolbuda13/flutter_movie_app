@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class DetailPage extends StatelessWidget {
-  const DetailPage({Key? key}) : super(key: key);
+  final String movieTag;
+
+  const DetailPage({Key? key, required this.movieTag}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,13 +13,16 @@ class DetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 영화 이미지 (하얀 상자로 대체)
-            Container(
-              width: double.infinity,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+            // 영화 이미지 (Hero 애니메이션 적용)
+            Hero(
+              tag: movieTag,
+              child: Container(
+                width: double.infinity,
+                height: 300,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 16),

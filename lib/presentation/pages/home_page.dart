@@ -36,16 +36,19 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const DetailPage(),
+                          builder: (context) => const DetailPage(movieTag: "popular_movie"),
                         ),
                       );
                     },
-                    child: Container(
-                      width: double.infinity,
-                      height: 280,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                    child: Hero(
+                      tag: "popular_movie",
+                      child: Container(
+                        width: double.infinity,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
@@ -54,7 +57,9 @@ class HomePage extends StatelessWidget {
             ),
             // 현재 상영중 섹션
             const SectionHeaderWidget(title: '현재 상영중'),
-            MovieListWidget(movieList: List.generate(20, (index) => '영화 $index')),
+            MovieListWidget(
+              movieList: List.generate(5, (index) => '영화 $index'),
+            ),
           ],
         ),
       ),
@@ -105,17 +110,20 @@ class MovieListWidget extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const DetailPage(),
+                  builder: (context) => DetailPage(movieTag: "movie_$index"),
                 ),
               );
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Container(
-                width: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+            child: Hero(
+              tag: "movie_$index",
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
