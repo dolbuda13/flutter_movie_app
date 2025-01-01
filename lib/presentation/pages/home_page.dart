@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'detail_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -30,12 +31,25 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    height: 280,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DetailPage(movieTag: "popular_movie"),
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: "popular_movie",
+                      child: Container(
+                        width: double.infinity,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -43,30 +57,8 @@ class HomePage extends StatelessWidget {
             ),
             // 현재 상영중 섹션
             const SectionHeaderWidget(title: '현재 상영중'),
-            MovieListWidget(movieList: List.generate(20, (index) => '영화 $index')),
-            // 인기순 섹션
-            const SectionHeaderWidget(title: '인기순'),
             MovieListWidget(
-              movieList: List.generate(
-                20,
-                (index) => '영화 $index',
-              ),
-            ),
-            // 평점 높은순 섹션
-            const SectionHeaderWidget(title: '평점 높은순'),
-            MovieListWidget(
-              movieList: List.generate(
-                20,
-                (index) => '영화 $index',
-              ),
-            ),
-            // 개봉 예정 섹션
-            const SectionHeaderWidget(title: '개봉 예정'),
-            MovieListWidget(
-              movieList: List.generate(
-                20,
-                (index) => '영화 $index',
-              ),
+              movieList: List.generate(5, (index) => '영화 $index'),
             ),
           ],
         ),
@@ -99,12 +91,10 @@ class SectionHeaderWidget extends StatelessWidget {
 
 class MovieListWidget extends StatelessWidget {
   final List<String> movieList;
-  final bool showRank;
 
   const MovieListWidget({
     Key? key,
     required this.movieList,
-    this.showRank = false,
   }) : super(key: key);
 
   @override
@@ -115,13 +105,26 @@ class MovieListWidget extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: movieList.length,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Container(
-              width: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailPage(movieTag: "movie_$index"),
+                ),
+              );
+            },
+            child: Hero(
+              tag: "movie_$index",
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               ),
             ),
           );
