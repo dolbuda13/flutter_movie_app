@@ -1,43 +1,56 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_movie_app/domain/entities/movie.dart';
 import 'package:flutter_movie_app/domain/usecases/fetch_now_playing_movies.dart';
 import 'package:flutter_movie_app/domain/usecases/fetch_popular_movies.dart';
 import 'package:flutter_movie_app/domain/usecases/fetch_top_rated_movies.dart';
 import 'package:flutter_movie_app/domain/usecases/fetch_upcoming_movies.dart';
+import 'package:flutter_movie_app/presentation/providers.dart';
 
-class HomeViewModel extends ChangeNotifier {
-  final FetchNowPlayingMovies fetchNowPlayingMovies;
-  final FetchPopularMovies fetchPopularMovies;
-  final FetchTopRatedMovies fetchTopRatedMovies;
-  final FetchUpcomingMovies fetchUpcomingMovies;
+class HomeState {
+  final List<Movie> nowPlayingMovies;
+  final List<Movie> popularMovies;
+  final List<Movie> topRatedMovies;
+  final List<Movie> upcomingMovies;
 
-  List<Movie>? nowPlayingMovies;
-  List<Movie>? popularMovies;
-  List<Movie>? topRatedMovies;
-  List<Movie>? upcomingMovies;
-  bool isLoading = true;
-
-  HomeViewModel({
-    required this.fetchNowPlayingMovies,
-    required this.fetchPopularMovies,
-    required this.fetchTopRatedMovies,
-    required this.fetchUpcomingMovies,
+  HomeState({
+    required this.nowPlayingMovies,
+    required this.popularMovies,
+    required this.topRatedMovies,
+    required this.upcomingMovies,
   });
+}
 
-  Future<void> fetchMovies() async {
-    isLoading = true;
-    notifyListeners();
+class HomeViewModel extends Notifier<HomeState?> {
+  @override
+  HomeState? build() {
+    _fetchMovies();
+    return null;
+  }
 
+  Future<void> _fetchMovies() async {
     try {
-      nowPlayingMovies = await fetchNowPlayingMovies();
-      popularMovies = await fetchPopularMovies();
-      topRatedMovies = await fetchTopRatedMovies();
-      upcomingMovies = await fetchUpcomingMovies();
+      final nowPlayingUsecase = ref.read(fetchNowPlayingMoviesUsecaseProvider);
+      final popularUsecase = ref.read(fetchPopularMoviesUsecaseProvider);
+      final topRatedUsecase = ref.read(fetchTopRatedMoviesUsecaseProvider);
+      final upcomingUsecase = ref.read(fetchUpcomingMoviesUsecaseProvider);
+
+      final nowPlaying = await nowPlayingUsecase();
+      final popular = await popularUsecase();
+      final topRated = await topRatedUsecase();
+      final upcoming = await upcomingUsecase();
+
+      state = HomeState(
+        nowPlayingMovies: nowPlaying ?? [],
+        popularMovies: popular ?? [],
+        topRatedMovies: topRated ?? [],
+        upcomingMovies: upcoming ?? [],
+      );
     } catch (e) {
       print("Error fetching movies: $e");
-    } finally {
-      isLoading = false;
-      notifyListeners();
     }
   }
 }
+
+final homeViewModelProvider = NotifierProvider<HomeViewModel, HomeState?>(
+  HomeViewModel.new,
+);

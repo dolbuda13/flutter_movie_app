@@ -1,134 +1,183 @@
 import 'package:flutter/material.dart';
-import 'detail_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_movie_app/presentation/viewmodels/home_view_model.dart';
+import 'package:flutter_movie_app/domain/entities/movie.dart';
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends ConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeViewModelProvider);
+
+    if (homeState == null) {
+      return const Scaffold(
         backgroundColor: Colors.black,
-        elevation: 0,
-        toolbarHeight: 20,
-      ),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 가장 인기 있는 영화 섹션
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "가장 인기있는",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DetailPage(movieTag: "popular_movie"),
-                        ),
-                      );
-                    },
-                    child: Hero(
-                      tag: "popular_movie",
-                      child: Container(
-                        width: double.infinity,
-                        height: 280,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            buildFeaturedMovie(context, homeState.popularMovies),
+            const SizedBox(height: 10),
             // 현재 상영중 섹션
-            const SectionHeaderWidget(title: '현재 상영중'),
-            MovieListWidget(
-              movieList: List.generate(5, (index) => '영화 $index'),
-            ),
+            buildMovieSection(context, '현재 상영중', homeState.nowPlayingMovies),
+            const SizedBox(height: 10),
+            // 인기순 섹션
+            buildMovieSection(context, '인기순', homeState.popularMovies, showRanking: true),
+            const SizedBox(height: 10),
+            // 평점 높은순 섹션
+            buildMovieSection(context, '평점 높은순', homeState.topRatedMovies),
+            const SizedBox(height: 10),
+            // 개봉예정 섹션
+            buildMovieSection(context, '개봉예정', homeState.upcomingMovies),
           ],
         ),
       ),
-      backgroundColor: Colors.black,
     );
   }
-}
 
-class SectionHeaderWidget extends StatelessWidget {
-  final String title;
-
-  const SectionHeaderWidget({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  // 가장 인기 있는 영화 섹션
+  Widget buildFeaturedMovie(BuildContext context, List<Movie> movies) {
+    if (movies.isEmpty) {
+      return Container(
+        height: 300,
+        color: Colors.grey[800],
+        alignment: Alignment.center,
+        child: const Text(
+          '영화를 불러올 수 없습니다.',
+          style: TextStyle(color: Colors.white),
         ),
+      );
+    }
+
+    final movie = movies[0]; // 첫 번째 인기 영화를 선택
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Stack(
+        alignment: Alignment.bottomLeft,
+        children: [
+          Container(
+            height: 300,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
+                fit: BoxFit.cover,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            color: Colors.black54,
+            child: const Text(
+              '가장 인기있는',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class MovieListWidget extends StatelessWidget {
-  final List<String> movieList;
+  // 영화 리스트 섹션 빌더
+  Widget buildMovieSection(BuildContext context, String title, List<Movie> movies,
+      {bool showRanking = false}) {
+    if (movies.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Text(
+          '$title 영화를 불러올 수 없습니다.',
+          style: const TextStyle(color: Colors.white),
+        ),
+      );
+    }
 
-  const MovieListWidget({
-    Key? key,
-    required this.movieList,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 180,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: movieList.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailPage(movieTag: "movie_$index"),
-                ),
-              );
-            },
-            child: Hero(
-              tag: "movie_$index",
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Container(
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: movies.length,
+              itemBuilder: (context, index) {
+                final movie = movies[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/detail',
+                      arguments: {
+                        'id': movie.id,
+                        'posterPath': movie.posterPath,
+                      },
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        margin: const EdgeInsets.only(left: 20),
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      if (showRanking)
+                        Positioned(
+                          bottom: 5,
+                          left: 5,
+                          child: Container(
+                            padding: const EdgeInsets.all(4.0),
+                            color: Colors.black54,
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

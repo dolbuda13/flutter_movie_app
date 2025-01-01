@@ -68,21 +68,23 @@ class MovieRepositoryImpl implements MovieRepository {
     return MovieDetail(
       budget: dto.budget ?? 0,
       genres: dto.genres.map((genre) => genre['name'] as String).toList(),
-      id: dto.id,
+      id: dto.id ?? 0,
       productionCompanyLogos: dto.productionCompanies
           .map((company) => company['logo_path'] as String?)
           .where((logoPath) => logoPath != null)
           .cast<String>()
           .toList(),
-      overview: dto.overview,
-      popularity: dto.popularity,
-      releaseDate: DateTime.parse(dto.releaseDate),
+      overview: dto.overview ?? '',
+      popularity: dto.popularity ?? 0.0,
+      releaseDate: dto.releaseDate != null
+          ? DateTime.tryParse(dto.releaseDate!) ?? DateTime(1970, 1, 1)
+          : DateTime(1970, 1, 1),
       revenue: dto.revenue ?? 0,
       runtime: dto.runtime ?? 0,
       tagline: dto.tagline ?? '',
-      title: dto.title,
-      voteAverage: dto.voteAverage,
-      voteCount: dto.voteCount,
+      title: dto.title ?? '',
+      voteAverage: dto.voteAverage ?? 0.0,
+      voteCount: dto.voteCount ?? 0,
     );
   }
 }
