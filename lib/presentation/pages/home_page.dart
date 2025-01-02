@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_movie_app/domain/entities/movie_detail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_movie_app/presentation/viewmodels/home_view_model.dart';
 import 'package:flutter_movie_app/domain/entities/movie.dart';
 import 'package:flutter_movie_app/presentation/pages/detail_page.dart';
-
+import 'package:flutter_movie_app/presentation/viewmodels/home_view_model.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -49,66 +47,70 @@ class HomePage extends ConsumerWidget {
   }
 
   // 가장 인기 있는 영화 섹션
-Widget buildFeaturedMovie(BuildContext context, List<Movie> movies) {
-  if (movies.isEmpty) {
-    return Container(
-      height: 350,
-      color: Colors.grey[800],
-      alignment: Alignment.center,
-      child: const Text(
-        '영화를 불러올 수 없습니다.',
-        style: TextStyle(color: Colors.white),
-      ),
+  Widget buildFeaturedMovie(BuildContext context, List<Movie> movies) {
+    if (movies.isEmpty) {
+      return Container(
+        height: 350,
+        color: Colors.grey[800],
+        alignment: Alignment.center,
+        child: const Text(
+          '영화를 불러올 수 없습니다.',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    }
+
+    final movie = movies[0]; // 첫 번째 인기 영화를 선택
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // "가장 인기있는" 텍스트
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
+          child: Text(
+            '가장 인기있는',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        // 포스터 이미지 
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPage(
+                  movieId: movie.id,
+                  posterPath: movie.posterPath,
+                ),
+              ),
+            );
+          },
+          child: Hero(
+            tag: "movie_${movie.id}",
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
+                height: 300,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
-
-  final movie = movies[0]; // 첫 번째 인기 영화를 선택
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: const Text(
-          '가장 인기있는',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      const SizedBox(height: 10),
-      // 포스터 이미지 
-      GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetailPage(
-                movieId: movie.id,
-                posterPath: movie.posterPath,
-              ),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Container(
-            height: 300,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
 
   // 영화 리스트 섹션 빌더
   Widget buildMovieSection(BuildContext context, String title, List<Movie> movies,
@@ -152,41 +154,26 @@ Widget buildFeaturedMovie(BuildContext context, List<Movie> movies) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                     builder: (context) => DetailPage(movieId: movie.id,
-                             posterPath: movie.posterPath),
-                      )
-                    );
-                  },
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: 120,
-                        margin: const EdgeInsets.only(left: 20),
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
-                            fit: BoxFit.cover,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
+                        builder: (context) => DetailPage(
+                          movieId: movie.id,
+                          posterPath: movie.posterPath,
                         ),
                       ),
-                      if (showRanking)
-                        Positioned(
-                          bottom: 5,
-                          left: 5,
-                          child: Container(
-                            padding: const EdgeInsets.all(4.0),
-                            color: Colors.black54,
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
+                    );
+                  },
+                  child: Hero(
+                    tag: "movie_${movie.id}",
+                    child: Container(
+                      width: 120,
+                      margin: const EdgeInsets.only(left: 20),
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage('https://image.tmdb.org/t/p/w500${movie.posterPath}'),
+                          fit: BoxFit.cover,
                         ),
-                    ],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 );
               },

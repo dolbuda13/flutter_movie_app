@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_movie_app/domain/entities/movie_detail.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_movie_app/presentation/providers.dart';
 
 class DetailPage extends ConsumerWidget {
@@ -37,7 +37,7 @@ class DetailPage extends ConsumerWidget {
           child: Text(
             "오류 발생: $error",
             style: const TextStyle(color: Colors.white),
-        ),
+          ),
         ),
       ),
     );
