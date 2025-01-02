@@ -1,42 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_movie_app/domain/entities/movie_detail.dart';
+import 'package:flutter_movie_app/presentation/providers.dart';
 
-class DetailPage extends StatelessWidget {
-  final MovieDetail movieDetail;
+class DetailPage extends ConsumerWidget {
+  final int movieId;
+  final String posterPath;
 
-  const DetailPage({Key? key, required this.movieDetail}) : super(key: key);
+  const DetailPage({Key? key, required this.movieId, required this.posterPath}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final movieDetailAsyncValue = ref.watch(movieDetailProvider(movieId));
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 영화 이미지 (Hero 애니메이션 적용)
-            Hero(
-              tag: "movie_${movieDetail.id}",
-              child: Container(
-                width: double.infinity,
-                height: 300,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage('https://image.tmdb.org/t/p/w500${movieDetail.productionCompanyLogos.isNotEmpty ? movieDetail.productionCompanyLogos.first : ''}'),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+      ),
+      body: movieDetailAsyncValue.when(
+        data: (movieDetail) {
+          if (movieDetail == null) {
+            return const Center(
+              child: Text(
+                "영화 정보를 가져올 수 없습니다.",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+          return _buildDetailContent(context, movieDetail);
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+        error: (error, stackTrace) => Center(
+          child: Text(
+            "오류 발생: $error",
+            style: const TextStyle(color: Colors.white),
+        ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailContent(BuildContext context, MovieDetail movieDetail) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Hero(
+            tag: "movie_${movieDetail.id}",
+            child: Container(
+              width: double.infinity,
+              height: 300,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage('https://image.tmdb.org/t/p/w500$posterPath'),
+                  fit: BoxFit.cover,
                 ),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-            const SizedBox(height: 16),
-            // 영화 제목, 개봉일
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
                     movieDetail.title,
                     style: const TextStyle(
                       fontSize: 24,
@@ -44,91 +77,85 @@ class DetailPage extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  Text(
-                    movieDetail.releaseDate.toLocal().toString().split(' ')[0],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white70,
-                    ),
+                ),
+                Text(
+                  movieDetail.releaseDate.toLocal().toString().split(' ')[0],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            // 태그라인
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                movieDetail.tagline,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              movieDetail.tagline,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white70,
               ),
             ),
-            const SizedBox(height: 16),
-            // 러닝타임 및 카테고리
-            Padding(
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0,
+              children: movieDetail.genres.map((genre) => GenreChip(genre: genre)).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              movieDetail.overview,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              "흥행정보",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 100,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Wrap(
-                spacing: 8.0,
-                children: movieDetail.genres.map((genre) => GenreChip(genre: genre)).toList(),
-              ),
+              children: [
+                InfoBox(title: "평점", value: movieDetail.voteAverage.toStringAsFixed(1)),
+                InfoBox(title: "평점투표수", value: movieDetail.voteCount.toString()),
+                InfoBox(title: "인기점수", value: movieDetail.popularity.toStringAsFixed(1)),
+                InfoBox(title: "예산", value: "\$${movieDetail.budget}"),
+                InfoBox(title: "수익", value: "\$${movieDetail.revenue}"),
+              ],
             ),
-            const SizedBox(height: 16),
-            // 영화 설명
-            Padding(
+          ),
+          const SizedBox(height: 24),
+          Container(
+            color: Colors.white.withOpacity(0.1),
+            height: 100,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                movieDetail.overview,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                ),
-              ),
+              children: movieDetail.productionCompanyLogos.map((logo) => ProductionLogo(logoPath: logo)).toList(),
             ),
-            const SizedBox(height: 24),
-            // 흥행정보 섹션 제목
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "흥행정보",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // 흥행정보 가로 리스트뷰
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: [
-                  InfoBox(title: "평점", value: movieDetail.voteAverage.toStringAsFixed(1)),
-                  InfoBox(title: "평점투표수", value: movieDetail.voteCount.toString()),
-                  InfoBox(title: "인기점수", value: movieDetail.popularity.toStringAsFixed(1)),
-                  InfoBox(title: "예산", value: "\$${movieDetail.budget}"),
-                  InfoBox(title: "수익", value: "\$${movieDetail.revenue}"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            // 제작사 섹션
-            Container(
-              color: Colors.white.withOpacity(0.1),
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: movieDetail.productionCompanyLogos.map((logo) => ProductionLogo(logoPath: logo)).toList(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
