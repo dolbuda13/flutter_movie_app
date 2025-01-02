@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_movie_app/presentation/viewmodels/home_view_model.dart';
 import 'package:flutter_movie_app/domain/entities/movie.dart';
 
-
 class HomePage extends ConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -50,7 +49,7 @@ class HomePage extends ConsumerWidget {
   Widget buildFeaturedMovie(BuildContext context, List<Movie> movies) {
     if (movies.isEmpty) {
       return Container(
-        height: 300,
+        height: 350,
         color: Colors.grey[800],
         alignment: Alignment.center,
         child: const Text(
@@ -61,12 +60,26 @@ class HomePage extends ConsumerWidget {
     }
 
     final movie = movies[0]; // 첫 번째 인기 영화를 선택
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Stack(
-        alignment: Alignment.bottomLeft,
-        children: [
-          Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // "가장 인기있는" 텍스트
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Text(
+            '가장 인기있는',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        // 포스터 이미지
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
             height: 300,
             width: double.infinity,
             decoration: BoxDecoration(
@@ -77,20 +90,8 @@ class HomePage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            color: Colors.black54,
-            child: const Text(
-              '가장 인기있는',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

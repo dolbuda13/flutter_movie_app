@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_movie_app/domain/entities/movie_detail.dart';
 
 class DetailPage extends StatelessWidget {
-  final String movieTag;
+  final MovieDetail movieDetail;
 
-  const DetailPage({Key? key, required this.movieTag}) : super(key: key);
+  const DetailPage({Key? key, required this.movieDetail}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,12 +16,15 @@ class DetailPage extends StatelessWidget {
           children: [
             // 영화 이미지 (Hero 애니메이션 적용)
             Hero(
-              tag: movieTag,
+              tag: "movie_${movieDetail.id}",
               child: Container(
                 width: double.infinity,
                 height: 300,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  image: DecorationImage(
+                    image: NetworkImage('https://image.tmdb.org/t/p/w500${movieDetail.productionCompanyLogos.isNotEmpty ? movieDetail.productionCompanyLogos.first : ''}'),
+                    fit: BoxFit.cover,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -31,18 +35,18 @@ class DetailPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Text(
-                    "Moana 2",
-                    style: TextStyle(
+                    movieDetail.title,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   Text(
-                    "2024-11-27",
-                    style: TextStyle(
+                    movieDetail.releaseDate.toLocal().toString().split(' ')[0],
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Colors.white70,
                     ),
@@ -52,11 +56,11 @@ class DetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // 태그라인
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "The ocean is calling them back.",
-                style: TextStyle(
+                movieDetail.tagline,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white70,
                 ),
@@ -66,24 +70,18 @@ class DetailPage extends StatelessWidget {
             // 러닝타임 및 카테고리
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: const [
-                  GenreChip(genre: "Animation"),
-                  GenreChip(genre: "Adventure"),
-                  GenreChip(genre: "Family"),
-                  GenreChip(genre: "Comedy"),
-                ],
+              child: Wrap(
+                spacing: 8.0,
+                children: movieDetail.genres.map((genre) => GenreChip(genre: genre)).toList(),
               ),
             ),
             const SizedBox(height: 16),
             // 영화 설명
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "After receiving an unexpected call from her wayfinding ancestors, "
-                "Moana journeys alongside Maui and a new crew to the far seas of Oceania "
-                "and into dangerous, long-lost waters for an adventure unlike anything she's ever faced.",
-                style: TextStyle(
+                movieDetail.overview,
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white70,
                 ),
@@ -109,12 +107,12 @@ class DetailPage extends StatelessWidget {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: const [
-                  InfoBox(title: "평점", value: "8.4"),
-                  InfoBox(title: "평점투표수", value: "331"),
-                  InfoBox(title: "인기점수", value: "6,949.5"),
-                  InfoBox(title: "예산", value: "\$150,000,000"),
-                  InfoBox(title: "수익", value: "\$435,856,850"),
+                children: [
+                  InfoBox(title: "평점", value: movieDetail.voteAverage.toStringAsFixed(1)),
+                  InfoBox(title: "평점투표수", value: movieDetail.voteCount.toString()),
+                  InfoBox(title: "인기점수", value: movieDetail.popularity.toStringAsFixed(1)),
+                  InfoBox(title: "예산", value: "\$${movieDetail.budget}"),
+                  InfoBox(title: "수익", value: "\$${movieDetail.revenue}"),
                 ],
               ),
             ),
@@ -126,11 +124,7 @@ class DetailPage extends StatelessWidget {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: const [
-                  ProductionLogo(),
-                  ProductionLogo(),
-                  ProductionLogo(),
-                ],
+                children: movieDetail.productionCompanyLogos.map((logo) => ProductionLogo(logoPath: logo)).toList(),
               ),
             ),
           ],
@@ -208,7 +202,9 @@ class InfoBox extends StatelessWidget {
 }
 
 class ProductionLogo extends StatelessWidget {
-  const ProductionLogo({Key? key}) : super(key: key);
+  final String? logoPath;
+
+  const ProductionLogo({Key? key, this.logoPath}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -219,6 +215,12 @@ class ProductionLogo extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        image: logoPath != null
+            ? DecorationImage(
+                image: NetworkImage('https://image.tmdb.org/t/p/w500$logoPath'),
+                fit: BoxFit.cover,
+              )
+            : null,
       ),
     );
   }

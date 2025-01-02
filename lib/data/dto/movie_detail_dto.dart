@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'movie_detail_dto.g.dart';
-
-@JsonSerializable()
 class MovieDetailDto {
   /// 영화 ID
   final int id;
@@ -14,19 +9,15 @@ class MovieDetailDto {
   final String overview;
 
   /// 개봉일
-  @JsonKey(name: "release_date")
   final String releaseDate;
 
   /// 영화 상영 시간 (분 단위)
-  @JsonKey(name: "runtime")
   final int? runtime;
 
   /// 평균 평점
-  @JsonKey(name: "vote_average")
   final double voteAverage;
 
   /// 총 투표 수
-  @JsonKey(name: "vote_count")
   final int voteCount;
 
   /// 인기 점수
@@ -42,11 +33,9 @@ class MovieDetailDto {
   final String? tagline;
 
   /// 장르 이름 리스트
-  @JsonKey(name: "genres")
   final List<Map<String, dynamic>> genres;
 
   /// 제작사 로고 경로 리스트
-  @JsonKey(name: "production_companies")
   final List<Map<String, dynamic>> productionCompanies;
 
   MovieDetailDto({
@@ -65,13 +54,51 @@ class MovieDetailDto {
     this.tagline,
   });
 
-  factory MovieDetailDto.fromJson(Map<String, dynamic> json) =>
-      _$MovieDetailDtoFromJson(json);
+  factory MovieDetailDto.fromJson(Map<String, dynamic> json) {
+    return MovieDetailDto(
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      overview: json['overview'] ?? '',
+      releaseDate: json['release_date'] ?? '',
+      voteAverage: (json['vote_average'] ?? 0).toDouble(),
+      voteCount: (json['vote_count'] ?? 0).toInt(),
+      popularity: (json['popularity'] ?? 0).toDouble(),
+      genres: (json['genres'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [],
+      productionCompanies: (json['production_companies'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [],
+      runtime: (json['runtime'] as num?)?.toInt(),
+      budget: (json['budget'] as num?)?.toInt(),
+      revenue: (json['revenue'] as num?)?.toInt(),
+      tagline: json['tagline'] as String?,
+    );
+  }
 
-  Map<String, dynamic> toJson() => _$MovieDetailDtoToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'overview': overview,
+      'release_date': releaseDate,
+      'runtime': runtime,
+      'vote_average': voteAverage,
+      'vote_count': voteCount,
+      'popularity': popularity,
+      'budget': budget,
+      'revenue': revenue,
+      'tagline': tagline,
+      'genres': genres,
+      'production_companies': productionCompanies,
+    };
+  }
 
-  List<String> get genreNames => genres.map((g) => g['name'] as String).toList();
+  List<String> get genreNames =>
+      genres.map((g) => g['name']?.toString() ?? '').toList();
 
   List<String?> get productionCompanyLogos =>
-      productionCompanies.map((c) => c['logo_path'] as String?).toList();
+      productionCompanies.map((c) => c['logo_path']?.toString()).toList();
 }
